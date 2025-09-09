@@ -113,3 +113,75 @@ export function insertionSort(rects){
     }
     return pairs;
 }
+export function quickSort(rects) {
+    const pairs = [];
+    const arr = rects.slice();
+  
+    function swap(i, j) {
+      const tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+  
+    function partition(low, high) {
+      let pivot = arr[high].width;
+      let i = low - 1;
+  
+      for (let j = low; j < high; j++) {
+        pairs.push({
+          xx: j,
+          yy: high,
+          changed: false
+        });
+  
+        if (arr[j].width < pivot) {
+          i++;
+          swap(i, j);
+          pairs.push({
+            xx: i,
+            yy: j,
+            changed: true
+          });
+        }
+      }
+  
+      swap(i + 1, high);
+      pairs.push({
+        xx: i + 1,
+        yy: high,
+        changed: true
+      });
+  
+      return i + 1;
+    }
+  
+    function quick(low, high) {
+      if (low < high) {
+        const pi = partition(low, high);
+  
+        // mark pivot as sorted
+        pairs.push({
+          xx: pi,
+          yy: pi,
+          changed: false
+        });
+  
+        quick(low, pi - 1);
+        quick(pi + 1, high);
+      }
+    }
+  
+    quick(0, arr.length - 1);
+  
+    // mark all as sorted at the end
+    for (let i = 0; i < arr.length; i++) {
+      pairs.push({
+        xx: i,
+        yy: i,
+        changed: false
+      });
+    }
+  
+    return pairs;
+  }
+  

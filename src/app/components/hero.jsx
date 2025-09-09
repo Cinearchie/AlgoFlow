@@ -17,16 +17,17 @@ import { Github , Linkedin } from 'lucide-react';
 import SortingAnimation from "@/app/components/animation"
 import { PulsatingButton } from "@/components/magicui/pulsating-button";
 import { MoveUpRight } from 'lucide-react';
+import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 export default function Hero() {
   const [isOpen, setIsOpen] = useState(false)
 
   const navItems = [
     { name: "Home", link: "#" },
     { name: "Sorting", link: "sorting" },
-    { name: "About", link: "#about" },
-    { name: "Contact", link: "#contact" },
+    { name: "About", link: "/about" }
   ]
-
+  const words = `Master algorithms effortlessly with interactive step-by-step visualizations,
+  turning complex concepts into clear, engaging learning experiences`;
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-white text-black">
   {/* Navbar */}
@@ -70,10 +71,14 @@ export default function Hero() {
     {/* 👆 added `pt-32` (padding-top) so Hero moves below navbar */}
     <div className="md:w-3/4 space-y-4 text-center md:text-left">
       <h1 className="text-7xl font-bold">Algorithm Visualizer</h1>
-      <p className="text-3xl text-muted-foreground">
-      Master algorithms effortlessly with interactive step-by-step visualizations,<br/>
-      turning complex concepts into clear, engaging learning experiences
-      </p>
+      
+      <TextGenerateEffect
+  duration={2}
+  filter={false}
+  words={words}
+  className="text-muted-foreground text-3xl font-normal"
+/>
+
       <PulsatingButton className="flex items-center gap-2" href="/sorting">
   Check It Out <MoveUpRight className="inline-block w-5 h-5" />
 </PulsatingButton>

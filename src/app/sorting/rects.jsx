@@ -5,23 +5,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import Rect from "./rect";
 
 const Rects = ({ rects, speed }) => {
-  let margin = 5;
-  if (rects.length > 50) {
-    margin = 1;
-  }
+  let margin = rects.length > 50 ? 1 : 5;
 
+  // ✅ Ensure duration is always positive (between 0.05s and 2s)
+  const duration = Math.max(0.05, (speed || 500) / 1000);
+  
   return (
-    <div className="flex justify-center items-end">
+    <div className="flex justify-center items-end w-full h-[400px] mt-6">
       <AnimatePresence>
         {rects.map((rect, rectidx) => (
           <motion.div
-            key={rectidx} // use unique id if possible: rect.id
-            layout // enables automatic smooth position transitions
-            initial={{ opacity: 0, y: 20 }} // fade in
-            animate={{ opacity: 1, y: 0 }}  // animate to final position
-            exit={{ opacity: 0, y: 20 }}    // animate out if removed
-            transition={{ duration: speed / 1000, ease: "easeInOut" }}
-            className="mx-1" // small horizontal spacing
+            key={rectidx} // better: use rect.kk or unique id
+            layout
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration, ease: "easeInOut" }} // ✅ clamped duration
+            className="mx-1"
           >
             <Rect marg={margin} rect={rect} />
           </motion.div>

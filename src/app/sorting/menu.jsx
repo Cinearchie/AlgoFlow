@@ -25,7 +25,7 @@ class Menu extends Component {
           defaultValue={20}
           min={10}
           max={100}
-          step={10}
+          step={1}
           onChange={this.props.onCountChange}
           disable={this.props.disable}
         />
