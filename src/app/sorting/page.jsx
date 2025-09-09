@@ -43,7 +43,7 @@ class Sort extends Component {
     const navItems = [
       { name: "Home", link: "/" },
       { name: "Sorting", link: "sorting" },
-      { name: "About", link: "#about" }
+      { name: "About", link: "/about" }
     ];
 
     return (
