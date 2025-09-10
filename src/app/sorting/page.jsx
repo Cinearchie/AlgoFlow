@@ -13,10 +13,16 @@ import {
   MobileNavToggle,
 } from "@/components/ui/resizable-navbar";
 import { Github, Linkedin } from "lucide-react";
-
-import { bubbleSort, insertionSort, quickSort, selectionSort } from "@/lib/algorithms/sortingAlgo";
+import {
+  bubbleSort,
+  insertionSort,
+  quickSort,
+  selectionSort,
+} from "@/lib/algorithms/sortingAlgo";
 import Rects from "./rects";
 import Menu from "./menu";
+import CodeBlock from "@/components/ui/snippet";
+import ComplexityBoxes from "@/components/ui/complexityBox";
 
 class Sort extends Component {
   state = {
@@ -33,6 +39,84 @@ class Sort extends Component {
     isOpen: false,
   };
 
+  // lookup table for code + complexity
+  algoDetails = {
+    0: {
+      code: `
+function bubbleSort(arr) {
+  for (let i=0; i<arr.length; i++) {
+    for (let j=0; j<arr.length-i-1; j++) {
+      if (arr[j] > arr[j+1]) {
+        [arr[j], arr[j+1]] = [arr[j+1], arr[j]];
+      }
+    }
+  }
+  return arr;
+}`,
+      complexity: {
+        time: "Best: O(n)\nAverage: O(n^2)\nWorst: O(n^2)",
+        space: "O(1)",
+        notes: "Stable algorithm, good for small datasets, inefficient for large n.",
+      },
+    },
+    1: {
+      code: `
+function selectionSort(arr) {
+  for (let i=0; i<arr.length; i++) {
+    let minIdx = i;
+    for (let j=i+1; j<arr.length; j++) {
+      if (arr[j] < arr[minIdx]) minIdx = j;
+    }
+    [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+  }
+  return arr;
+}`,
+      complexity: {
+        time: "Best: O(n^2)\nAverage: O(n^2)\nWorst: O(n^2)",
+        space: "O(1)",
+        notes: "Not stable, always scans the entire unsorted array.",
+      },
+    },
+    2: {
+      code: `
+function insertionSort(arr) {
+  for (let i=1; i<arr.length; i++) {
+    let key = arr[i], j = i-1;
+    while (j >= 0 && arr[j] > key) {
+      arr[j+1] = arr[j];
+      j--;
+    }
+    arr[j+1] = key;
+  }
+  return arr;
+}`,
+      complexity: {
+        time: "Best: O(n)\nAverage: O(n^2)\nWorst: O(n^2)",
+        space: "O(1)",
+        notes: "Stable, adaptive, efficient for nearly-sorted data.",
+      },
+    },
+    3: {
+      code: `
+function quickSort(arr) {
+  if (arr.length <= 1) return arr;
+  const pivot = arr[arr.length - 1];
+  const left = [], right = [];
+  for (let i=0; i<arr.length-1; i++) {
+    if (arr[i] < pivot) left.push(arr[i]);
+    else right.push(arr[i]);
+  }
+  return [...quickSort(left), pivot, ...quickSort(right)];
+}`,
+      complexity: {
+        time: "Best: O(n log n)\nAverage: O(n log n)\nWorst: O(n^2)",
+        space: "O(log n)",
+        notes:
+          "Not stable in its typical implementation, very efficient in practice.",
+      },
+    },
+  };
+
   componentDidMount() {
     const rect = getInitialRects(this.state.count);
     const rect2 = rect.slice();
@@ -43,8 +127,11 @@ class Sort extends Component {
     const navItems = [
       { name: "Home", link: "/" },
       { name: "Sorting", link: "sorting" },
-      { name: "About", link: "/about" }
+      { name: "About", link: "/about" },
     ];
+
+    const { algo1 } = this.state;
+    const { code, complexity } = this.algoDetails[algo1];
 
     return (
       <div className="flex flex-col min-h-screen bg-white text-black">
@@ -53,8 +140,6 @@ class Sort extends Component {
           <NavBody>
             <NavbarLogo />
             <NavItems items={navItems} />
-
-            {/* Right side actions */}
             <div className="flex items-center gap-4">
               <NavbarButton
                 href="https://github.com/cinearchie"
@@ -119,6 +204,16 @@ class Sort extends Component {
             {this.state.doubles && <Rects rects={this.state.rects2} />}
           </div>
         </div>
+
+        {/* Code + Complexity side by side */}
+        <div className="flex flex-col md:flex-row gap-6 p-6">
+          <div className="flex-1">
+            <CodeBlock code={code} />
+          </div>
+          <div className="flex-1">
+            <ComplexityBoxes complexity={complexity} />
+          </div>
+        </div>
       </div>
     );
   }
@@ -128,6 +223,7 @@ class Sort extends Component {
     const rect2 = rect.slice();
     this.setState({ rects: rect, rects2: rect2 });
   };
+
   handleRefresh = () => {
     const rects = this.state.rects.map((r) => ({
       ...r,
@@ -136,14 +232,19 @@ class Sort extends Component {
     }));
     this.setState({ rects, rects2: rects.slice() });
   };
+
   handleDouble = (val) => this.setState({ doubles: val });
+
   handleCountChange = (val) => {
     const rect = getInitialRects(val);
     const rect2 = rect.slice();
     this.setState({ count: val, rects: rect, rects2: rect2 });
   };
+
   handleAlgoChanged1 = (val) => this.setState({ algo1: val });
+
   handleAlgoChanged2 = (val) => this.setState({ algo2: val });
+
   handleSpeedChanged = (val) => this.setState({ speed: 760 - val * 7.5 });
 
   handleSort = () => {
@@ -180,7 +281,7 @@ class Sort extends Component {
           break;
         case 3:
           steps2 = quickSort(this.state.rects2);
-            break;
+          break;
         default:
           steps2 = bubbleSort(this.state.rects2);
           break;
@@ -191,75 +292,106 @@ class Sort extends Component {
   };
 
   handleFirst = async (steps) => {
-  this.setState({ isRunning1: true });
-  let prevRect = [...this.state.rects];
+    this.setState({ isRunning1: true });
+    let prevRect = [...this.state.rects];
 
-  for (let i = 0; i < steps.length; i++) {
-    prevRect = [...prevRect];
+    for (let i = 0; i < steps.length; i++) {
+      prevRect = [...prevRect];
 
-    if (i !== 0) {
-      prevRect[steps[i - 1].xx] = { ...prevRect[steps[i - 1].xx], isSorting: false };
-      prevRect[steps[i - 1].yy] = { ...prevRect[steps[i - 1].yy], isSorting: false };
+      if (i !== 0) {
+        prevRect[steps[i - 1].xx] = {
+          ...prevRect[steps[i - 1].xx],
+          isSorting: false,
+        };
+        prevRect[steps[i - 1].yy] = {
+          ...prevRect[steps[i - 1].yy],
+          isSorting: false,
+        };
+      }
+
+      if (steps[i].xx === steps[i].yy) {
+        prevRect[steps[i].xx] = {
+          ...prevRect[steps[i].xx],
+          isSorted: true,
+          isSorting: false,
+        };
+      } else if (steps[i].changed) {
+        [prevRect[steps[i].xx], prevRect[steps[i].yy]] = [
+          { ...prevRect[steps[i].yy], isSorting: true },
+          { ...prevRect[steps[i].xx], isSorting: true },
+        ];
+      } else {
+        prevRect[steps[i].xx] = {
+          ...prevRect[steps[i].xx],
+          isSorting: true,
+        };
+        prevRect[steps[i].yy] = {
+          ...prevRect[steps[i].yy],
+          isSorting: true,
+        };
+      }
+
+      this.setState({ rects: prevRect });
+
+      if (i === steps.length - 1) {
+        this.setState({ isRunning1: false });
+        if (!this.state.isRunning2) this.setState({ isRunning: false });
+      }
+
+      await sleep(this.state.speed);
     }
+  };
 
-    if (steps[i].xx === steps[i].yy) {
-      prevRect[steps[i].xx] = { ...prevRect[steps[i].xx], isSorted: true, isSorting: false };
-    } else if (steps[i].changed) {
-      [prevRect[steps[i].xx], prevRect[steps[i].yy]] = [
-        { ...prevRect[steps[i].yy], isSorting: true },
-        { ...prevRect[steps[i].xx], isSorting: true },
-      ];
-    } else {
-      prevRect[steps[i].xx] = { ...prevRect[steps[i].xx], isSorting: true };
-      prevRect[steps[i].yy] = { ...prevRect[steps[i].yy], isSorting: true };
+  handleSecond = async (steps) => {
+    this.setState({ isRunning2: true });
+    let prevRect = [...this.state.rects2];
+
+    for (let i = 0; i < steps.length; i++) {
+      prevRect = [...prevRect];
+
+      if (i !== 0) {
+        prevRect[steps[i - 1].xx] = {
+          ...prevRect[steps[i - 1].xx],
+          isSorting: false,
+        };
+        prevRect[steps[i - 1].yy] = {
+          ...prevRect[steps[i - 1].yy],
+          isSorting: false,
+        };
+      }
+
+      if (steps[i].xx === steps[i].yy) {
+        prevRect[steps[i].xx] = {
+          ...prevRect[steps[i].xx],
+          isSorted: true,
+          isSorting: false,
+        };
+      } else if (steps[i].changed) {
+        [prevRect[steps[i].xx], prevRect[steps[i].yy]] = [
+          { ...prevRect[steps[i].yy], isSorting: true },
+          { ...prevRect[steps[i].xx], isSorting: true },
+        ];
+      } else {
+        prevRect[steps[i].xx] = {
+          ...prevRect[steps[i].xx],
+          isSorting: true,
+        };
+        prevRect[steps[i].yy] = {
+          ...prevRect[steps[i].yy],
+          isSorting: true,
+        };
+      }
+
+      this.setState({ rects2: prevRect });
+
+      if (i === steps.length - 1) {
+        this.setState({ isRunning2: false });
+        if (!this.state.isRunning1) this.setState({ isRunning: false });
+      }
+
+      await sleep(this.state.speed);
     }
-
-    this.setState({ rects: prevRect });
-
-    if (i === steps.length - 1) {
-      this.setState({ isRunning1: false });
-      if (!this.state.isRunning2) this.setState({ isRunning: false });
-    }
-
-    await sleep(this.state.speed);
-  }
-};
-
-handleSecond = async (steps) => {
-  this.setState({ isRunning2: true });
-  let prevRect = [...this.state.rects2];
-
-  for (let i = 0; i < steps.length; i++) {
-    prevRect = [...prevRect];
-
-    if (i !== 0) {
-      prevRect[steps[i - 1].xx] = { ...prevRect[steps[i - 1].xx], isSorting: false };
-      prevRect[steps[i - 1].yy] = { ...prevRect[steps[i - 1].yy], isSorting: false };
-    }
-
-    if (steps[i].xx === steps[i].yy) {
-      prevRect[steps[i].xx] = { ...prevRect[steps[i].xx], isSorted: true, isSorting: false };
-    } else if (steps[i].changed) {
-      [prevRect[steps[i].xx], prevRect[steps[i].yy]] = [
-        { ...prevRect[steps[i].yy], isSorting: true },
-        { ...prevRect[steps[i].xx], isSorting: true },
-      ];
-    } else {
-      prevRect[steps[i].xx] = { ...prevRect[steps[i].xx], isSorting: true };
-      prevRect[steps[i].yy] = { ...prevRect[steps[i].yy], isSorting: true };
-    }
-
-    this.setState({ rects2: prevRect });
-
-    if (i === steps.length - 1) {
-      this.setState({ isRunning2: false });
-      if (!this.state.isRunning1) this.setState({ isRunning: false });
-    }
-
-    await sleep(this.state.speed);
-  }
-};
-
+  };
 }
 
 function sleep(ms) {
