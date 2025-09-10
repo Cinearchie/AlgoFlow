@@ -18,6 +18,7 @@ import SortingAnimation from "@/app/components/animation"
 import { PulsatingButton } from "@/components/magicui/pulsating-button";
 import { MoveUpRight } from 'lucide-react';
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
+
 export default function Hero() {
   const [isOpen, setIsOpen] = useState(false)
 
